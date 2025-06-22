@@ -1,7 +1,7 @@
 const { google } = require('googleapis');
 const { auth } = require('google-auth-library');
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
     if (req.method !== 'GET') {
         return res.status(405).json({ message: 'Only GET method is allowed' });
     }
@@ -11,7 +11,7 @@ export default async function handler(req, res) {
         const client = auth.fromJSON(credentials);
         client.scopes = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
         const sheets = google.sheets({ version: 'v4', auth: client });
-        const spreadsheetId = '1ns_a_d_4ylTSyWqOBD1Mijw1hIf17tWs_2Xl3MCLKlQ
+        const spreadsheetId = '1ns_a_d_4ylTSyWqOBD1Mijw1hIf17tWs_2Xl3MCLKlQ'
 
         // Get all expenses and add a row index
         const expensesResponse = await sheets.spreadsheets.values.get({
