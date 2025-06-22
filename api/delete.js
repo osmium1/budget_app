@@ -11,7 +11,7 @@ export default async function handler(req, res) {
         const client = auth.fromJSON(credentials);
         client.scopes = ['https://www.googleapis.com/auth/spreadsheets'];
         const sheets = google.sheets({ version: 'v4', auth: client });
-        const spreadsheetId = 'YOUR_SPREADSHEET_ID'; // <-- IMPORTANT: Make sure this is your actual Spreadsheet ID
+        const spreadsheetId = '1ns_a_d_4ylTSyWqOBD1Mijw1hIf17tWs_2Xl3MCLKlQ
 
         const { sheetName, rowIndex } = req.body;
         
