@@ -3,74 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Budget Tracker</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Budget Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+        }
+        .container-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .loader {
+            border-top-color: #3498db;
+            -webkit-animation: spin 1s linear infinite;
+            animation: spin 1s linear infinite;
+        }
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
-<body>
-    <div class="container">
-        <h1>Personal Budget Tracker</h1>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg container-shadow p-6 sm:p-8 w-full max-w-4xl">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Budget Tracker</h1>
 
-        <div class="summary">
-            <div class="summary-box">
-                <h2>Today's Spendings</h2>
-                <p id="today-total">$0.00</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+            <div class="bg-green-500 text-white rounded-lg p-5 flex flex-col items-center justify-center container-shadow">
+                <p class="text-lg font-medium">Today's Total Expenses (X1)</p>
+                <p id="today-expenses-total" class="text-4xl font-bold mt-2">0.00</p>
             </div>
-            <div class="summary-box">
-                <h2>This Month's Spendings</h2>
-                <p id="month-total">$0.00</p>
+            <div class="bg-purple-500 text-white rounded-lg p-5 flex flex-col items-center justify-center container-shadow">
+                <p class="text-lg font-medium">Total Expenses This Month (X2)</p>
+                <p id="month-expenses-total" class="text-4xl font-bold mt-2">0.00</p>
             </div>
         </div>
 
-        <div class="form-container">
-            <h2>Add New Transaction</h2>
-            <form id="transaction-form">
-                <div class="form-group">
-                    <label for="date">Date:</label>
-                    <input type="date" id="date" name="date" required>
+        <div class="bg-gray-50 p-6 rounded-lg mb-8 container-shadow">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Add New Expense</h2>
+            <form id="add-expense-form" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <div>
+                    <label for="expense-date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                    <input type="date" id="expense-date" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2">
                 </div>
-                <div class="form-group">
-                    <label for="name">Name:</label>
-                    <input type="text" id="name" name="name" placeholder="e.g., Coffee" required>
+                <div>
+                    <label for="expense-description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <input type="text" id="expense-description" placeholder="e.g., Groceries" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2">
                 </div>
-                <div class="form-group">
-                    <label for="amount">Amount:</label>
-                    <input type="number" id="amount" name="amount" step="0.01" placeholder="e.g., 5.50" required>
+                <div>
+                    <label for="expense-amount" class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                    <input type="number" id="expense-amount" step="0.01" min="0" placeholder="0.00" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2">
                 </div>
-                <div class="form-group">
-                    <label for="type">Type:</label>
-                    <select id="type" name="type" required>
-                        <option value="Expense">Expense</option>
-                        <option value="Income">Income</option>
-                    </select>
+                <div class="md:col-span-3 flex justify-end">
+                    <button type="submit" id="add-expense-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-150 ease-in-out w-full md:w-auto">
+                        <i class="fas fa-plus mr-2"></i> Add Expense
+                    </button>
                 </div>
-                <div class="form-group">
-                    <label for="category">Category:</label>
-                    <input type="text" id="category" name="category" placeholder="e.g., Food" required>
-                </div>
-                <div class="form-group">
-                    <label for="remarks">Remarks (Optional):</label>
-                    <input type="text" id="remarks" name="remarks" placeholder="e.g., Morning meeting">
-                </div>
-                <button type="submit">Add Transaction</button>
             </form>
         </div>
 
-        <div class="history-container">
-            <h2>Recent Transactions</h2>
-            <table id="transaction-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Name</th>
-                        <th>Amount</th>
-                        <th>Category</th>
-                    </tr>
-                </thead>
-                <tbody>
+        <div class="bg-gray-50 p-6 rounded-lg mb-8 container-shadow">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Recent Expenses</h2>
+            <div class="overflow-x-auto rounded-lg border border-gray-200">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expenses-table-body" class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="4" class="px-6 py-10 text-center">
+                                <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mx-auto"></div>
+                                <p class="mt-2 text-gray-500">Loading Expenses...</p>
+                            </td>
+                        </tr>
                     </tbody>
-            </table>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-gray-50 p-6 rounded-lg mb-8 container-shadow">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Add Funds</h2>
+            <form id="add-fund-form" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                 <div>
+                    <label for="fund-date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                    <input type="date" id="fund-date" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2">
+                </div>
+                 <div>
+                    <label for="fund-amount" class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                    <input type="number" id="fund-amount" step="0.01" min="0" placeholder="0.00" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2">
+                </div>
+                <div class="md:col-span-1 flex justify-end">
+                    <button type="submit" id="add-fund-btn" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition duration-150 ease-in-out w-full md:w-auto">
+                        <i class="fas fa-wallet mr-2"></i> Add Fund
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="bg-gray-50 p-6 rounded-lg container-shadow">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Funds Added</h2>
+            <div class="overflow-x-auto rounded-lg border border-gray-200">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Added</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="funds-table-body" class="bg-white divide-y divide-gray-200">
+                         <tr>
+                            <td colspan="3" class="px-6 py-10 text-center">
+                                <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mx-auto"></div>
+                                <p class="mt-2 text-gray-500">Loading Funds...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
