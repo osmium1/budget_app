@@ -1,13 +1,3 @@
-// A mapping from our frontend description to the backend 'Type'
-const expenseTypeMapping = {
-    'Groceries': 'Food',
-    'Rent': 'Housing',
-    'Utilities': 'Housing',
-    'Transportation': 'Transportation',
-    'Entertainment': 'Entertainment',
-    'Other': 'Other'
-};
-
 document.addEventListener('DOMContentLoaded', () => {
     // Get all UI elements
     const todayExpensesTotalEl = document.getElementById('today-expenses-total');
@@ -31,7 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchData() {
         try {
-            const response = await fetch('/api/get-data');
+            // Call the new, specific endpoint
+            const response = await fetch('/api/data');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -55,14 +46,12 @@ document.addEventListener('DOMContentLoaded', () => {
             expenses.forEach(exp => {
                 const row = document.createElement('tr');
                 row.className = 'hover:bg-gray-50';
-                // Note: The indices [1], [4], [6] correspond to the columns in your Google Sheet
-                // Make sure they match your sheet: Date, Description, Amount
                 row.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${exp[1]}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${exp[4]}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">₹${parseFloat(exp[6] || 0).toFixed(2)}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button data-row-index="${exp[0]}" data-sheet="Expenses" class="delete-btn text-red-600 hover:text-red-900">
+                        <button data-row-index="${exp[7]}" data-sheet="Expenses" class="delete-btn text-red-600 hover:text-red-900">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </td>
@@ -74,16 +63,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderFunds(funds) {
-        fundsTableBody.innerHTML = ''; // Clear existing rows
+        fundsTableBody.innerHTML = '';
         if (funds.length === 0) {
             fundsTableBody.innerHTML = `<tr><td colspan="3" class="px-6 py-4 text-center text-gray-500">No funds added yet.</td></tr>`;
         } else {
-            // Sort by date, most recent first
             funds.sort((a, b) => new Date(b[0]) - new Date(a[0]));
             funds.forEach(fund => {
                 const row = document.createElement('tr');
                 row.className = 'hover:bg-gray-50';
-                // Note: The indices [0], [1] correspond to Date and Amount in the 'Funds' sheet
                 row.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${fund[0]}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">₹${parseFloat(fund[1] || 0).toFixed(2)}</td>
@@ -108,21 +95,13 @@ document.addEventListener('DOMContentLoaded', () => {
         let totalMonth = 0;
 
         expenses.forEach(exp => {
-            const expenseDate = new Date(exp[1]); // Assuming date is in the second column
-            const amount = parseFloat(exp[6] || 0); // Assuming amount is in the seventh column
+            const expenseDate = new Date(exp[1]);
+            const amount = parseFloat(exp[6] || 0);
 
-            if (
-                expenseDate.getDate() === today.getDate() &&
-                expenseDate.getMonth() === currentMonth &&
-                expenseDate.getFullYear() === currentYear
-            ) {
+            if (expenseDate.getDate() === today.getDate() && expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear) {
                 totalToday += amount;
             }
-
-            if (
-                expenseDate.getMonth() === currentMonth &&
-                expenseDate.getFullYear() === currentYear
-            ) {
+            if (expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear) {
                 totalMonth += amount;
             }
         });
@@ -139,25 +118,26 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.disabled = true;
         btn.innerHTML = 'Adding...';
 
-        const newExpense = {
+        const expenseData = {
             date: expenseDateInput.value,
             description: expenseDescriptionInput.value.trim(),
             amount: parseFloat(expenseAmountInput.value)
         };
 
         try {
-            const response = await fetch('/api/add-expense', {
+            // Call the new, specific endpoint
+            const response = await fetch('/api/add', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newExpense),
+                body: JSON.stringify({ type: 'expense', data: expenseData }),
             });
             if (!response.ok) {
                  const errorData = await response.json();
                  throw new Error(errorData.message || 'Failed to add expense');
             }
             addExpenseForm.reset();
-            expenseDateInput.value = today; // Reset date to today
-            fetchData(); // Refresh data
+            expenseDateInput.value = today;
+            fetchData();
         } catch (error) {
             console.error("Error adding expense:", error);
             alert(`Error: ${error.message}`);
@@ -173,24 +153,25 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.disabled = true;
         btn.innerHTML = 'Adding...';
         
-        const newFund = {
+        const fundData = {
             date: fundDateInput.value,
             amount: parseFloat(fundAmountInput.value)
         };
 
         try {
-             const response = await fetch('/api/add-fund', {
+            // Call the new, specific endpoint
+            const response = await fetch('/api/add', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newFund),
+                body: JSON.stringify({ type: 'fund', data: fundData }),
             });
              if (!response.ok) {
                  const errorData = await response.json();
                  throw new Error(errorData.message || 'Failed to add fund');
             }
             addFundForm.reset();
-            fundDateInput.value = today; // Reset date to today
-            fetchData(); // Refresh data
+            fundDateInput.value = today;
+            fetchData();
         } catch (error) {
             console.error("Error adding fund:", error);
             alert(`Error: ${error.message}`);
@@ -214,7 +195,8 @@ document.addEventListener('DOMContentLoaded', () => {
         deleteBtn.disabled = true;
 
         try {
-            const response = await fetch('/api/delete-row', {
+            // Call the new, specific endpoint
+            const response = await fetch('/api/delete', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ sheetName, rowIndex }),
@@ -225,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(errorData.message || 'Failed to delete row');
             }
             
-            fetchData(); // Refresh the tables
+            fetchData();
         } catch (error) {
             console.error("Error deleting row:", error);
             alert(`Error: ${error.message}`);
@@ -233,11 +215,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-
     // ----- INITIALIZATION -----
-
     addExpenseForm.addEventListener('submit', handleAddExpense);
     addFundForm.addEventListener('submit', handleAddFund);
     document.body.addEventListener('click', handleDelete);
-    fetchData(); // Initial data load
+    fetchData();
 });
